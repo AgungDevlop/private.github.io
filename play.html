@@ -291,22 +291,10 @@ const apiUrl = 'https://raw.githubusercontent.com/AgungDevlop/Viral/main/Video.j
   // Ambil elemen video
   var videoElement = document.getElementById('videoPlayer');
 
-  // Tambahkan event listener untuk 'play' dan 'seeked' (ketika video diskip)
-  videoElement.addEventListener('play', function() {
-    loadScript();
-  });
-
-  videoElement.addEventListener('seeked', function() {
-    loadScript();
-  });
 });
 
 // Fungsi untuk memuat skrip
-function loadScript() {
-  (function(s, u, z, p) {
-    s.src = u, s.setAttribute('data-zone', z), p.appendChild(s);
-  })(document.createElement('script'), 'https://arvigorothan.com/tag.min.js', 6831340, document.body || document.documentElement);
-}
+
 
     
 const currentYear = new Date().getFullYear();
