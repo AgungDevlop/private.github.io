@@ -200,8 +200,10 @@ function renderPageNumbers() {
 function playVideo(videoUrl, videoTitle) {
   sessionStorage.setItem('videoUrl', videoUrl);
   sessionStorage.setItem('videoTitle', videoTitle);
-  window.location.reload(); // Refresh the current page
+  window.location.reload();
+  window.scrollTo(0, 0); // Scroll to the top of the page
 }
+
 
 
 
