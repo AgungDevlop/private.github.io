@@ -1,10 +1,8 @@
 
-    const apiUrl = 'https://raw.githubusercontent.com/AgungDevlop/Viral/main/Video.json';
-    let videos = [];
-    let currentPage = 1;
-    const videosPerPage = 10;
+    const urlParams = new URLSearchParams(window.location.search);
+    const apiKey = urlParams.get('key');
     
-        const videoUrl = sessionStorage.getItem('videoUrl');
+    const videoUrl = sessionStorage.getItem('videoUrl');
     const videoTitle = sessionStorage.getItem('videoTitle');
     const pageTitle = document.title = videoTitle;
     
@@ -13,10 +11,11 @@ if (pageTitle == null){
 }
     
 if (videoUrl) {
-  const videoPlayer = document.getElementById('videoPlayer');
-  videoPlayer.src = videoUrl;
-  videoPlayer.load();
-  videoPlayer.play();
+const videoPlayer = document.getElementById('playVideo');
+    videoPlayer.src = videoUrl;
+    videoPlayer.addEventListener('loadedmetadata', function() {
+        videoPlayer.play();
+    });
 } else {
   console.error('No video URL found in sessionStorage');
   const mainElement = document.querySelector('main.container');
@@ -24,35 +23,14 @@ if (videoUrl) {
     mainElement.style.display = 'none';  // Menyembunyikan elemen main
   }
 }
+
     
-    document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('key') === 's1m0ntox') {
-        loadDataFromJson();
-    } else {
-        console.log('Parameter key tidak valid atau tidak ada. Tidak memuat data dari JSON.');
-    }
-});
-
-function loadDataFromJson() {
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            videos = data.reverse(); // Reverse the order of videos
-            loadVideos(currentPage);
-            renderPageNumbers();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-}
-
-    if (videoUrl && videoTitle) {
-    const videoPlayer = document.getElementById('videoPlayer');
-   document.getElementById('videoTitle').innerHTML= videoTitle;
-    videoPlayer.src = videoUrl;
-    videoPlayer.load();
-    videoPlayer.play();
+   if (apiKey === 's1m0ntox') {
+        // Load video list from JSON for the specified key
+        const apiUrl = 'https://raw.githubusercontent.com/AgungDevlop/Viral/main/Video.json';
+        let videos = [];
+        let currentPage = 1;
+        const videosPerPage = 10;
 
     fetch(apiUrl)
         .then(response => response.json())
@@ -64,15 +42,6 @@ function loadDataFromJson() {
         .catch(error => {
             console.error('Error:', error);
         });
-} else {
-    console.error('No video URL and title found in sessionStorage');
-    const mainElement = document.querySelector('main.container');
-    if (mainElement) {
-        mainElement.style.display = 'none';  // Menyembunyikan elemen main
-    }
-}
-
-
 
     function loadVideos(page) {
         const start = (page - 1) * videosPerPage;
@@ -93,7 +62,7 @@ function loadDataFromJson() {
                         <div class="loading-overlay">
                             <div class="loading-placeholder"></div>
                         </div>
-                        <video class="w-full h-40 object-cover" preload="metadata" onloadedmetadata="captureThumbnail(this)">
+                        <video id="data-video" class="w-full h-40 object-cover" preload="metadata" onloadedmetadata="captureThumbnail(this)">
                             <source src="${videoUrl}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -116,8 +85,8 @@ function loadDataFromJson() {
         document.getElementById('prevPage').classList.toggle('hidden', currentPage === 1);
         document.getElementById('nextPage').classList.toggle('hidden', end >= videos.length);
     }
-
-function renderPageNumbers() {
+    
+    function renderPageNumbers() {
     const totalPages = Math.ceil(videos.length / videosPerPage);
     const pageNumbers = document.getElementById('pageNumbers');
     pageNumbers.innerHTML = ''; // Clear existing page numbers
@@ -197,16 +166,34 @@ function renderPageNumbers() {
     }
 }
 
-function playVideo(videoUrl, videoTitle) {
-  sessionStorage.setItem('videoUrl', videoUrl);
-  sessionStorage.setItem('videoTitle', videoTitle);
-  window.location.reload();
-  window.scrollTo(0, 0); // Scroll to the top of the page
+  } else {
+        console.error('Invalid or missing API key');
+        // Handle the case where the API key is invalid or missing
+    }
+
+    if (videoUrl && videoTitle) {
+    const videoPlayer = document.getElementById('playVideo');
+    videoPlayer.src = videoUrl;
+    videoPlayer.addEventListener('loadedmetadata', function() {
+        videoPlayer.play();
+    });
+   document.getElementById('videoTitle').innerHTML= videoTitle;
+
+} else {
+    console.error('No video URL and title found in sessionStorage');
+    const mainElement = document.querySelector('main.container');
+    if (mainElement) {
+        mainElement.style.display = 'none';  // Menyembunyikan elemen main
+    }
 }
 
 
 
-
+    function playVideo(videoUrl, videoTitle) {
+    sessionStorage.setItem('videoUrl', videoUrl);
+    sessionStorage.setItem('videoTitle', videoTitle);
+    window.location.href = ''
+    }
 
     function captureThumbnail(video) {
         const canvas = document.createElement('canvas');
@@ -264,16 +251,17 @@ function playVideo(videoUrl, videoTitle) {
             renderPageNumbers();
         }
     });
-    
-const currentYear = new Date().getFullYear();
-    document.getElementById('copyrightText').textContent = `© Copyright By Simontok Indo ${currentYear}`;
-    
-    document.getElementById('title').textContent = `Simontok ${currentYear}`;
-    document.title = `Simontok ${currentYear}`;
-    
-    
-    var myFP = fluidPlayer(
-        'videoPlayer',	{
+   
+   document.addEventListener('DOMContentLoaded', function() {
+  // Ambil elemen video
+  var videoElement = document.getElementById('video-id');
+
+
+ 
+});
+
+var myFP = fluidPlayer(
+        'video-id',	{
 	"layoutControls": {
 		"controlBar": {
 			"autoHideTimeout": 3,
@@ -290,7 +278,7 @@ const currentYear = new Date().getFullYear();
 		"allowTheatre": true,
 		"playPauseAnimation": false,
 		"playbackRateEnabled": false,
-		"allowDownload": false,
+		"allowDownload": true,
 		"playButtonShowing": false,
 		"fillToContainer": false,
 		"posterImage": ""
@@ -299,12 +287,12 @@ const currentYear = new Date().getFullYear();
 		"adList": [
 			{
 				"roll": "preRoll",
-				"vastTag": "https://majorcharacter.com/dbm.FJz/dNG/N/v/ZpGsUB/qewmQ9iutZ/UAlHk/PuTFUWx/MijgYYwTNcTUQTttNfTiE_yKNijlAv1UNaQc",
+				"vastTag": "https://majorcharacter.com/dbm/Fnz.daG-NkvYZVGqUB/-eSmq9Ou/ZCUnlkkKP/T/UIxNMSjHYqwfN/TnQvtoN/TREFyXN-jJA/1pNNQr",
 				"adText": ""
 			},
 			{
 				"roll": "midRoll",
-				"vastTag": "https://majorcharacter.com/dbm.FJz/dNG/N/v/ZpGsUB/qewmQ9iutZ/UAlHk/PuTFUWx/MijgYYwTNcTUQTttNfTiE_yKNijlAv1UNaQc",
+				"vastTag": "https://majorcharacter.com/dbm/Fnz.daG-NkvYZVGqUB/-eSmq9Ou/ZCUnlkkKP/T/UIxNMSjHYqwfN/TnQvtoN/TREFyXN-jJA/1pNNQr",
 				"adText": ""
 			}
 		],
@@ -312,4 +300,8 @@ const currentYear = new Date().getFullYear();
 		"adCTATextPosition": ""
 	}
 });
-
+ 
+const currentYear = new Date().getFullYear();
+    document.getElementById('copyrightText').textContent = `© Copyright By Simontok Indo ${currentYear}`;
+    document.getElementById('title').textContent = `Simontok ${currentYear}`;
+  
