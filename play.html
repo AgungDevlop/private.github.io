@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play Video</title>
     <!-- Include Tailwind CSS -->
+ <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -61,6 +62,8 @@
             margin-right: 10px;
         }
     </style>
+    
+<script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
 </head>
 
 <body class="bg-gray-100 p-5">
@@ -80,6 +83,7 @@
   <!-- Main Content -->
 <main class="container mx-auto mt-8 p-4 bg-white rounded shadow-lg">
   <div class="aspect-w-16 aspect-h-9">
+     <h1 id="videoTitle" class="text-2xl mt-8 font-bold">Video Title<h1>
     <video id="videoPlayer" class="w-full h-full object-cover" controls preload="metadata" allowfullscreen></video>
   </div>
 </main>
@@ -134,6 +138,7 @@ const apiUrl = 'https://raw.githubusercontent.com/AgungDevlop/Viral/main/Video.j
 
     if (videoUrl && videoTitle) {
     const videoPlayer = document.getElementById('videoPlayer');
+   document.getElementById('videoTitle').innerHTML= videoTitle;
     videoPlayer.src = videoUrl;
     videoPlayer.load();
     videoPlayer.play();
@@ -141,9 +146,7 @@ const apiUrl = 'https://raw.githubusercontent.com/AgungDevlop/Viral/main/Video.j
     fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
-            videos = data;
-            // Mengacak data setiap kali memuat
-            videos.sort(() => Math.random() - 0.5);
+            videos = data.reverse(); // Reverse the order of videos
             loadVideos(currentPage);
             renderPageNumbers();
         })
@@ -178,7 +181,7 @@ const apiUrl = 'https://raw.githubusercontent.com/AgungDevlop/Viral/main/Video.j
                         <div class="loading-overlay">
                             <div class="loading-placeholder"></div>
                         </div>
-                        <video class="w-full h-40 object-cover" preload="metadata" onloadedmetadata="captureThumbnail(this)">
+                        <video id="video-id" class="w-full h-40 object-cover" preload="metadata" onloadedmetadata="captureThumbnail(this)">
                             <source src="${videoUrl}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -202,27 +205,85 @@ const apiUrl = 'https://raw.githubusercontent.com/AgungDevlop/Viral/main/Video.j
         document.getElementById('nextPage').classList.toggle('hidden', end >= videos.length);
     }
 
-    function renderPageNumbers() {
-        const totalPages = Math.ceil(videos.length / videosPerPage);
-        const pageNumbers = document.getElementById('pageNumbers');
-        pageNumbers.innerHTML = ''; // Clear existing page numbers
-        for (let i = 1; i <= totalPages; i++) {
-            const button = document.createElement('button');
-            button.innerText = i;
-            button.classList.add('mx-1', 'px-3', 'py-1', 'rounded', 'hover:bg-indigo-700', 'hover:text-white');
-            if (i === currentPage) {
-                button.classList.add('bg-indigo-500', 'text-white');
-            } else {
-                button.classList.add('bg-gray-300', 'text-gray-600');
-            }
-            button.addEventListener('click', function() {
-                currentPage = i;
-                loadVideos(currentPage);
-                renderPageNumbers();
-            });
-            pageNumbers.appendChild(button);
+function renderPageNumbers() {
+    const totalPages = Math.ceil(videos.length / videosPerPage);
+    const pageNumbers = document.getElementById('pageNumbers');
+    pageNumbers.innerHTML = ''; // Clear existing page numbers
+
+    const maxVisiblePages = 3; // Set the maximum visible page numbers
+    const displayedPages = [];
+
+    // Calculate the range of pages to display
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (totalPages <= maxVisiblePages) {
+        // If total pages are less than or equal to maxVisiblePages, display all pages
+        startPage = 1;
+        endPage = totalPages;
+    } else {
+        // Ensure the current page is centered if not at the beginning or end
+        if (currentPage <= Math.ceil(maxVisiblePages / 2)) {
+            endPage = maxVisiblePages;
+        } else if (currentPage >= totalPages - Math.floor(maxVisiblePages / 2)) {
+            startPage = totalPages - maxVisiblePages + 1;
         }
     }
+
+    if (startPage > 1) {
+        const firstPage = document.createElement('button');
+        firstPage.innerText = '1';
+        firstPage.classList.add('mx-1', 'px-3', 'py-1', 'rounded', 'hover:bg-indigo-700', 'hover:text-white');
+        firstPage.addEventListener('click', function () {
+            currentPage = 1;
+            loadVideos(currentPage);
+            renderPageNumbers();
+        });
+        pageNumbers.appendChild(firstPage);
+
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            pageNumbers.appendChild(ellipsis);
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        displayedPages.push(i);
+        const button = document.createElement('button');
+        button.innerText = i;
+        button.classList.add('mx-1', 'px-3', 'py-1', 'rounded', 'hover:bg-indigo-700', 'hover:text-white');
+        if (i === currentPage) {
+            button.classList.add('bg-indigo-500', 'text-white');
+        } else {
+            button.classList.add('bg-gray-300', 'text-gray-600');
+        }
+        button.addEventListener('click', function () {
+            currentPage = i;
+            loadVideos(currentPage);
+            renderPageNumbers();
+        });
+        pageNumbers.appendChild(button);
+    }
+
+    if (endPage < totalPages) {
+        if (totalPages - endPage >= 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            pageNumbers.appendChild(ellipsis);
+        }
+
+        const lastPage = document.createElement('button');
+        lastPage.innerText = totalPages;
+        lastPage.classList.add('mx-1', 'px-3', 'py-1', 'rounded', 'hover:bg-indigo-700', 'hover:text-white');
+        lastPage.addEventListener('click', function () {
+            currentPage = totalPages;
+            loadVideos(currentPage);
+            renderPageNumbers();
+        });
+        pageNumbers.appendChild(lastPage);
+    }
+}
 
     function playVideo(videoUrl, videoTitle) {
     sessionStorage.setItem('videoUrl', videoUrl);
@@ -291,9 +352,9 @@ const apiUrl = 'https://raw.githubusercontent.com/AgungDevlop/Viral/main/Video.j
   // Ambil elemen video
   var videoElement = document.getElementById('videoPlayer');
 
-});
 
-// Fungsi untuk memuat skrip
+ 
+});
 
 
     
@@ -301,6 +362,50 @@ const currentYear = new Date().getFullYear();
     document.getElementById('copyrightText').textContent = `© Copyright By Simontok Indo ${currentYear}`;
     document.getElementById('title').textContent = `Simontok ${currentYear}`;
   </script>
+  
+
+<script>
+    var myFP = fluidPlayer(
+        'videoPlayer',	{
+	"layoutControls": {
+		"controlBar": {
+			"autoHideTimeout": 3,
+			"animated": true,
+			"autoHide": true
+		},
+		"htmlOnPauseBlock": {
+			"html": null,
+			"height": null,
+			"width": null
+		},
+		"autoPlay": false,
+		"mute": true,
+		"allowTheatre": true,
+		"playPauseAnimation": false,
+		"playbackRateEnabled": false,
+		"allowDownload": false,
+		"playButtonShowing": false,
+		"fillToContainer": false,
+		"posterImage": ""
+	},
+	"vastOptions": {
+		"adList": [
+			{
+				"roll": "preRoll",
+				"vastTag": "https://majorcharacter.com/dbm.FJz/dNG/N/v/ZpGsUB/qewmQ9iutZ/UAlHk/PuTFUWx/MijgYYwTNcTUQTttNfTiE_yKNijlAv1UNaQc",
+				"adText": ""
+			},
+			{
+				"roll": "midRoll",
+				"vastTag": "https://majorcharacter.com/dbm.FJz/dNG/N/v/ZpGsUB/qewmQ9iutZ/UAlHk/PuTFUWx/MijgYYwTNcTUQTttNfTiE_yKNijlAv1UNaQc",
+				"adText": ""
+			}
+		],
+		"adCTAText": false,
+		"adCTATextPosition": ""
+	}
+});
+</script>
 
 </body>
 
