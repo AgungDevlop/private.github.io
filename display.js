@@ -3,7 +3,28 @@
     let videos = [];
     let currentPage = 1;
     const videosPerPage = 10;
-
+    
+        const videoUrl = sessionStorage.getItem('videoUrl');
+    const videoTitle = sessionStorage.getItem('videoTitle');
+    const pageTitle = document.title = videoTitle;
+    
+if (pageTitle == null){
+  document.title = "Play Video";
+}
+    
+if (videoUrl) {
+  const videoPlayer = document.getElementById('videoPlayer');
+  videoPlayer.src = videoUrl;
+  videoPlayer.load();
+  videoPlayer.play();
+} else {
+  console.error('No video URL found in sessionStorage');
+  const mainElement = document.querySelector('main.container');
+  if (mainElement) {
+    mainElement.style.display = 'none';  // Menyembunyikan elemen main
+  }
+}
+    
     document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('key') === 's1m0ntox') {
@@ -24,6 +45,31 @@ function loadDataFromJson() {
         .catch(error => {
             console.error('Error:', error);
         });
+}
+
+    if (videoUrl && videoTitle) {
+    const videoPlayer = document.getElementById('videoPlayer');
+   document.getElementById('videoTitle').innerHTML= videoTitle;
+    videoPlayer.src = videoUrl;
+    videoPlayer.load();
+    videoPlayer.play();
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            videos = data.reverse(); // Reverse the order of videos
+            loadVideos(currentPage);
+            renderPageNumbers();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+} else {
+    console.error('No video URL and title found in sessionStorage');
+    const mainElement = document.querySelector('main.container');
+    if (mainElement) {
+        mainElement.style.display = 'none';  // Menyembunyikan elemen main
+    }
 }
 
 
@@ -151,11 +197,12 @@ function renderPageNumbers() {
     }
 }
 
-    function playVideo(videoUrl, videoTitle) {
-    sessionStorage.setItem('videoUrl', videoUrl);
-    sessionStorage.setItem('videoTitle', videoTitle);
-    window.location.href = 'play.html';
+function playVideo(videoUrl, videoTitle) {
+  sessionStorage.setItem('videoUrl', videoUrl);
+  sessionStorage.setItem('videoTitle', videoTitle);
+  window.location.reload(); // Refresh the current page
 }
+
 
 
 
@@ -221,3 +268,46 @@ const currentYear = new Date().getFullYear();
     
     document.getElementById('title').textContent = `Simontok ${currentYear}`;
     document.title = `Simontok ${currentYear}`;
+    
+    
+    var myFP = fluidPlayer(
+        'videoPlayer',	{
+	"layoutControls": {
+		"controlBar": {
+			"autoHideTimeout": 3,
+			"animated": true,
+			"autoHide": true
+		},
+		"htmlOnPauseBlock": {
+			"html": null,
+			"height": null,
+			"width": null
+		},
+		"autoPlay": false,
+		"mute": true,
+		"allowTheatre": true,
+		"playPauseAnimation": false,
+		"playbackRateEnabled": false,
+		"allowDownload": false,
+		"playButtonShowing": false,
+		"fillToContainer": false,
+		"posterImage": ""
+	},
+	"vastOptions": {
+		"adList": [
+			{
+				"roll": "preRoll",
+				"vastTag": "https://majorcharacter.com/dbm.FJz/dNG/N/v/ZpGsUB/qewmQ9iutZ/UAlHk/PuTFUWx/MijgYYwTNcTUQTttNfTiE_yKNijlAv1UNaQc",
+				"adText": ""
+			},
+			{
+				"roll": "midRoll",
+				"vastTag": "https://majorcharacter.com/dbm.FJz/dNG/N/v/ZpGsUB/qewmQ9iutZ/UAlHk/PuTFUWx/MijgYYwTNcTUQTttNfTiE_yKNijlAv1UNaQc",
+				"adText": ""
+			}
+		],
+		"adCTAText": false,
+		"adCTATextPosition": ""
+	}
+});
+
