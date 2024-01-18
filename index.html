@@ -86,6 +86,7 @@
     </button>
 </div>
 
+
 <footer class="bg-indigo-600 mt-3 text-white p-4 text-center">
     <p id="copyrightText" class="text-sm">
         ©Copyright By Simontok Indo 2024
@@ -111,9 +112,7 @@ function loadDataFromJson() {
     fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
-            videos = data;
-            // Mengacak data setiap kali memuat
-            videos.sort(() => Math.random() - 0.5);
+            videos = data.reverse(); // Reverse the order of videos
             loadVideos(currentPage);
             renderPageNumbers();
         })
@@ -121,6 +120,7 @@ function loadDataFromJson() {
             console.error('Error:', error);
         });
 }
+
 
 
     function loadVideos(page) {
@@ -166,27 +166,85 @@ function loadDataFromJson() {
         document.getElementById('nextPage').classList.toggle('hidden', end >= videos.length);
     }
 
-    function renderPageNumbers() {
-        const totalPages = Math.ceil(videos.length / videosPerPage);
-        const pageNumbers = document.getElementById('pageNumbers');
-        pageNumbers.innerHTML = ''; // Clear existing page numbers
-        for (let i = 1; i <= totalPages; i++) {
-            const button = document.createElement('button');
-            button.innerText = i;
-            button.classList.add('mx-1', 'px-3', 'py-1', 'rounded', 'hover:bg-indigo-700', 'hover:text-white');
-            if (i === currentPage) {
-                button.classList.add('bg-indigo-500', 'text-white');
-            } else {
-                button.classList.add('bg-gray-300', 'text-gray-600');
-            }
-            button.addEventListener('click', function() {
-                currentPage = i;
-                loadVideos(currentPage);
-                renderPageNumbers();
-            });
-            pageNumbers.appendChild(button);
+function renderPageNumbers() {
+    const totalPages = Math.ceil(videos.length / videosPerPage);
+    const pageNumbers = document.getElementById('pageNumbers');
+    pageNumbers.innerHTML = ''; // Clear existing page numbers
+
+    const maxVisiblePages = 3; // Set the maximum visible page numbers
+    const displayedPages = [];
+
+    // Calculate the range of pages to display
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (totalPages <= maxVisiblePages) {
+        // If total pages are less than or equal to maxVisiblePages, display all pages
+        startPage = 1;
+        endPage = totalPages;
+    } else {
+        // Ensure the current page is centered if not at the beginning or end
+        if (currentPage <= Math.ceil(maxVisiblePages / 2)) {
+            endPage = maxVisiblePages;
+        } else if (currentPage >= totalPages - Math.floor(maxVisiblePages / 2)) {
+            startPage = totalPages - maxVisiblePages + 1;
         }
     }
+
+    if (startPage > 1) {
+        const firstPage = document.createElement('button');
+        firstPage.innerText = '1';
+        firstPage.classList.add('mx-1', 'px-3', 'py-1', 'rounded', 'hover:bg-indigo-700', 'hover:text-white');
+        firstPage.addEventListener('click', function () {
+            currentPage = 1;
+            loadVideos(currentPage);
+            renderPageNumbers();
+        });
+        pageNumbers.appendChild(firstPage);
+
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            pageNumbers.appendChild(ellipsis);
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        displayedPages.push(i);
+        const button = document.createElement('button');
+        button.innerText = i;
+        button.classList.add('mx-1', 'px-3', 'py-1', 'rounded', 'hover:bg-indigo-700', 'hover:text-white');
+        if (i === currentPage) {
+            button.classList.add('bg-indigo-500', 'text-white');
+        } else {
+            button.classList.add('bg-gray-300', 'text-gray-600');
+        }
+        button.addEventListener('click', function () {
+            currentPage = i;
+            loadVideos(currentPage);
+            renderPageNumbers();
+        });
+        pageNumbers.appendChild(button);
+    }
+
+    if (endPage < totalPages) {
+        if (totalPages - endPage >= 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            pageNumbers.appendChild(ellipsis);
+        }
+
+        const lastPage = document.createElement('button');
+        lastPage.innerText = totalPages;
+        lastPage.classList.add('mx-1', 'px-3', 'py-1', 'rounded', 'hover:bg-indigo-700', 'hover:text-white');
+        lastPage.addEventListener('click', function () {
+            currentPage = totalPages;
+            loadVideos(currentPage);
+            renderPageNumbers();
+        });
+        pageNumbers.appendChild(lastPage);
+    }
+}
 
     function playVideo(videoUrl, videoTitle) {
     sessionStorage.setItem('videoUrl', videoUrl);
